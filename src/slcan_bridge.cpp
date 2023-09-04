@@ -9,6 +9,7 @@ namespace slcan_bridge
                             { this->onShutdown(); });
         can_rx_pub_ = this->create_publisher<can_plugins2::msg::Frame>("can_rx", 10);
         can_tx_sub_ = this->create_subscription<can_plugins2::msg::Frame>("can_tx", 10, std::bind(&SlcanBridge::canTxCallback, this, _1));
+        robomas_sub_ = this->create_subscription<can_plugins2::msg::Robomasframe>("robomaster", 10, std::bind(&SlcanBridge::robomasCallback, this, _1));
 
         // initalize asio members
         io_context_ = std::make_shared<boost::asio::io_context>();
@@ -29,6 +30,13 @@ namespace slcan_bridge
 
     void SlcanBridge::canTxCallback(const can_plugins2::msg::Frame::SharedPtr msg)
     {
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg);
+    }
+
+    void SlcanBridge::robomasCallback(const can_plugins2::msg::Robomasframe::SharedPtr msg){
         if (!is_active_)
             return;
 
@@ -130,6 +138,46 @@ namespace slcan_bridge
         std::vector<uint8_t> output = cobs::encode(raw_data);
 
         asyncWrite(output);
+    }
+
+    void SlcanBridge::asyncWrite(const can_plugins2::msg::Robomasframe::SharedPtr robomasFrame)
+    {
+        //if (command == slcan_command::Normal)
+        //    RCLCPP_ERROR(get_logger(), "asyncWrite(Command) can not use normal. you need to use asyncWrite(Frame)");
+
+        // data structure
+        /*
+        uint8_t command & frame_type: (command: if it is normal can frame, it is 0x00.)<<4 | is_rtr << 2 | is_extended << 1 | is_error
+        uint8_t id[] : data
+        */
+        if(robomasFrame->command == 0x00){
+            std::vector<uint8_t> raw_data(10);
+            for(int i = 0;i < 9;i++){
+                raw_data[1 + i] = robomasFrame->mode[i];
+            }
+            raw_data[0] = (0x30 + robomasFrame->command) ;
+            std::vector<uint8_t> output = cobs::encode(raw_data);
+
+            asyncWrite(output);
+        }else if(robomasFrame->command == 0x01){
+            std::vector<uint8_t> raw_data(9);
+            for(int i = 0;i < 8;i++){
+                raw_data[1 + i] = robomasFrame->mode[i];
+            }
+            raw_data[0] = (0x30 + robomasFrame->command) ;
+            std::vector<uint8_t> output = cobs::encode(raw_data);
+
+            asyncWrite(output);
+        }else if((0x02 < robomasFrame->command) || (robomasFrame->command < 0x05)){
+            std::vector<uint8_t> raw_data(33);
+            
+            memcpy(raw_data.data() + 1,robomasFrame->target.data(),robomasFrame->target.size() * sizeof(float));
+            
+            raw_data[0] = (0x30 + robomasFrame->command) ;
+            std::vector<uint8_t> output = cobs::encode(raw_data);
+
+            asyncWrite(output);
+        }
     }
 
     void SlcanBridge::readingProcess(const std::vector<uint8_t> data)

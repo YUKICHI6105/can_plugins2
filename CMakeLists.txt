@@ -21,6 +21,7 @@ include_directories(include ${Boost_INCLUDE_DIRS})
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Frame.msg"
+  "msg/RobomasFrame.msg"
   DEPENDENCIES std_msgs
 )
 
