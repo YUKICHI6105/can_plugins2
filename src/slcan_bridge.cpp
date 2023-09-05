@@ -9,7 +9,7 @@ namespace slcan_bridge
                             { this->onShutdown(); });
         can_rx_pub_ = this->create_publisher<can_plugins2::msg::Frame>("can_rx", 10);
         can_tx_sub_ = this->create_subscription<can_plugins2::msg::Frame>("can_tx", 10, std::bind(&SlcanBridge::canTxCallback, this, _1));
-        robomas_sub_ = this->create_subscription<can_plugins2::msg::Robomasframe>("robomaster", 10, std::bind(&SlcanBridge::robomasCallback, this, _1));
+        robomas_sub_ = this->create_subscription<can_plugins2::msg::RobomasFrame>("robomaster", 10, std::bind(&SlcanBridge::robomasCallback, this, _1));
 
         // initalize asio members
         io_context_ = std::make_shared<boost::asio::io_context>();
@@ -36,7 +36,7 @@ namespace slcan_bridge
         asyncWrite(msg);
     }
 
-    void SlcanBridge::robomasCallback(const can_plugins2::msg::Robomasframe::SharedPtr msg){
+    void SlcanBridge::robomasCallback(const can_plugins2::msg::RobomasFrame::SharedPtr msg){
         if (!is_active_)
             return;
 
@@ -140,7 +140,7 @@ namespace slcan_bridge
         asyncWrite(output);
     }
 
-    void SlcanBridge::asyncWrite(const can_plugins2::msg::Robomasframe::SharedPtr robomasFrame)
+    void SlcanBridge::asyncWrite(const can_plugins2::msg::RobomasFrame::SharedPtr robomasFrame)
     {
         //if (command == slcan_command::Normal)
         //    RCLCPP_ERROR(get_logger(), "asyncWrite(Command) can not use normal. you need to use asyncWrite(Frame)");

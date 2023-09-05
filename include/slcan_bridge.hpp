@@ -13,7 +13,7 @@
 #include "cobs.hpp"
 #include "test.hpp"
 #include "can_plugins2/msg/frame.hpp"
-#include "can_plugins2/msg/robomasframe.hpp"
+#include "can_plugins2/msg/robomas_frame.hpp"
 using namespace std::chrono_literals;
 using namespace std::placeholders;
 
@@ -58,10 +58,10 @@ namespace slcan_bridge
 
         rclcpp::Publisher<can_plugins2::msg::Frame>::SharedPtr can_rx_pub_;
         rclcpp::Subscription<can_plugins2::msg::Frame>::SharedPtr can_tx_sub_;
-        rclcpp::Subscription<can_plugins2::msg::Robomasframe>::SharedPtr robomas_sub_;
+        rclcpp::Subscription<can_plugins2::msg::RobomasFrame>::SharedPtr robomas_sub_;
 
         void canTxCallback(const can_plugins2::msg::Frame::SharedPtr msg);
-        void robomasCallback(const can_plugins2::msg::Robomasframe::SharedPtr msg);
+        void robomasCallback(const can_plugins2::msg::RobomasFrame::SharedPtr msg);
 
         const int initialize_timeout_ = 1000; // ms
         // port open and setting.
@@ -76,7 +76,7 @@ namespace slcan_bridge
 
         void asyncWrite(const can_plugins2::msg::Frame::SharedPtr msg);
         void asyncWrite(const slcan_command::Command command, const std::vector<uint8_t> data);
-        void asyncWrite(const can_plugins2::msg::Robomasframe::SharedPtr robomasFrame);
+        void asyncWrite(const can_plugins2::msg::RobomasFrame::SharedPtr robomasFrame);
 
         // Directly use is deprecated.
         void asyncWrite(const std::vector<uint8_t> data);
