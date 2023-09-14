@@ -168,7 +168,7 @@ namespace slcan_bridge
             std::vector<uint8_t> output = cobs::encode(raw_data);
 
             asyncWrite(output);
-        }else if((0x02 < robomasFrame->command) || (robomasFrame->command < 0x05)){
+        }else if((0x02 <= robomasFrame->command) && (robomasFrame->command <= 0x06)){
             std::vector<uint8_t> raw_data(33);
             
             memcpy(raw_data.data() + 1,robomasFrame->target.data(),robomasFrame->target.size() * sizeof(float));
