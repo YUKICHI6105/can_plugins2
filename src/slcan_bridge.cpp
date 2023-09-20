@@ -10,6 +10,14 @@ namespace slcan_bridge
         can_rx_pub_ = this->create_publisher<can_plugins2::msg::Frame>("can_rx", 10);
         can_tx_sub_ = this->create_subscription<can_plugins2::msg::Frame>("can_tx", 10, std::bind(&SlcanBridge::canTxCallback, this, _1));
         robomas_sub_ = this->create_subscription<can_plugins2::msg::RobomasFrame>("robomaster", 10, std::bind(&SlcanBridge::robomasCallback, this, _1));
+        robomas_target1_ = this->create_subscription<can_plugins2::msg::RobomasTarget>("robomas_target1", 10, std::bind(&SlcanBridge::robomasCallback1, this, _1));
+        robomas_target2_ = this->create_subscription<can_plugins2::msg::RobomasTarget>("robomas_target2", 10, std::bind(&SlcanBridge::robomasCallback2, this, _1));
+        robomas_target3_ = this->create_subscription<can_plugins2::msg::RobomasTarget>("robomas_target3", 10, std::bind(&SlcanBridge::robomasCallback3, this, _1));
+        robomas_target4_ = this->create_subscription<can_plugins2::msg::RobomasTarget>("robomas_target4", 10, std::bind(&SlcanBridge::robomasCallback4, this, _1));
+        robomas_target5_ = this->create_subscription<can_plugins2::msg::RobomasTarget>("robomas_target5", 10, std::bind(&SlcanBridge::robomasCallback5, this, _1));
+        robomas_target6_ = this->create_subscription<can_plugins2::msg::RobomasTarget>("robomas_target6", 10, std::bind(&SlcanBridge::robomasCallback6, this, _1));
+        robomas_target7_ = this->create_subscription<can_plugins2::msg::RobomasTarget>("robomas_target7", 10, std::bind(&SlcanBridge::robomasCallback7, this, _1));
+        robomas_target8_ = this->create_subscription<can_plugins2::msg::RobomasTarget>("robomas_target8", 10, std::bind(&SlcanBridge::robomasCallback8, this, _1));
 
         // initalize asio members
         io_context_ = std::make_shared<boost::asio::io_context>();
@@ -41,6 +49,62 @@ namespace slcan_bridge
             return;
 
         asyncWrite(msg);
+    }
+
+    void SlcanBridge::robomasCallback1(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg,0x08);
+    }
+
+    void SlcanBridge::robomasCallback2(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg,0x09);
+    }
+
+    void SlcanBridge::robomasCallback3(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg,0x0a);
+    }
+
+    void SlcanBridge::robomasCallback4(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg,0x0b);
+    }
+
+    void SlcanBridge::robomasCallback5(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg,0x0c);
+    }
+
+    void SlcanBridge::robomasCallback6(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg,0x0d);
+    }
+
+    void SlcanBridge::robomasCallback7(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg,0x0e);
+    }
+
+    void SlcanBridge::robomasCallback8(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+        if (!is_active_)
+            return;
+
+        asyncWrite(msg,0x0f);
     }
 
     // port open and setting.
@@ -150,7 +214,21 @@ namespace slcan_bridge
         uint8_t command & frame_type: (command: if it is normal can frame, it is 0x00.)<<4 | is_rtr << 2 | is_extended << 1 | is_error
         uint8_t id[] : data
         */
-        if(robomasFrame->command == 0x00){
+        if(robomasFrame->motor < 8){
+            std::vector<uint8_t> raw_data(19);
+            //command&motorID[1]|mode[1]|temp[1]|kp[4]|ki[4]|kd[4]|limitie[4]
+            raw_data[0] = (0x30 + robomasFrame->motor) ;
+            raw_data[1] = robomasFrame->mode;
+            raw_data[2] = robomasFrame->temp;
+            memcpy(raw_data.data() + 3,&robomasFrame->kp,sizeof(float));
+            memcpy(raw_data.data() + 7,&robomasFrame->ki,sizeof(float));
+            memcpy(raw_data.data() + 11,&robomasFrame->kd,sizeof(float));
+            memcpy(raw_data.data() + 15,&robomasFrame->limitie,sizeof(float));
+            std::vector<uint8_t> output = cobs::encode(raw_data);
+
+            asyncWrite(output);
+        }
+        /*if(robomasFrame-> == 0x00){
             std::vector<uint8_t> raw_data(10);
             for(int i = 0;i < 9;i++){
                 raw_data[1 + i] = robomasFrame->mode[i];
@@ -177,7 +255,14 @@ namespace slcan_bridge
             std::vector<uint8_t> output = cobs::encode(raw_data);
 
             asyncWrite(output);
-        }
+        }*/
+    }
+
+    void SlcanBridge::asyncWrite(const can_plugins2::msg::RobomasTarget::SharedPtr robomasTarget, uint8_t motor){
+        std::vector<uint8_t> raw_data(9);
+        //command&motorID[1]|target[4]
+        raw_data[0] = (0x30 + (0x0f & motor));
+        memcpy(raw_data.data() + 1,&robomasTarget->target,sizeof(float));
     }
 
     void SlcanBridge::readingProcess(const std::vector<uint8_t> data)
