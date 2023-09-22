@@ -1,5 +1,4 @@
 #include "slcan_bridge.hpp"
-
 namespace slcan_bridge
 {
 
@@ -35,7 +34,6 @@ namespace slcan_bridge
         asyncRead();
         handshake();
     }
-
     void SlcanBridge::canTxCallback(const can_plugins2::msg::Frame::SharedPtr msg)
     {
         if (!is_active_)
@@ -44,67 +42,76 @@ namespace slcan_bridge
         asyncWrite(msg);
     }
 
-    void SlcanBridge::robomasCallback(const can_plugins2::msg::RobomasFrame::SharedPtr msg){
+    void SlcanBridge::robomasCallback(const can_plugins2::msg::RobomasFrame::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
         asyncWrite(msg);
     }
 
-    void SlcanBridge::robomasCallback1(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+    void SlcanBridge::robomasCallback1(const can_plugins2::msg::RobomasTarget::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
-        asyncWrite(msg,0x08);
+        asyncWrite(msg, 0x08);
     }
 
-    void SlcanBridge::robomasCallback2(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+    void SlcanBridge::robomasCallback2(const can_plugins2::msg::RobomasTarget::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
-        asyncWrite(msg,0x09);
+        asyncWrite(msg, 0x09);
     }
 
-    void SlcanBridge::robomasCallback3(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+    void SlcanBridge::robomasCallback3(const can_plugins2::msg::RobomasTarget::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
-        asyncWrite(msg,0x0a);
+        asyncWrite(msg, 0x0a);
     }
 
-    void SlcanBridge::robomasCallback4(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+    void SlcanBridge::robomasCallback4(const can_plugins2::msg::RobomasTarget::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
-        asyncWrite(msg,0x0b);
+        asyncWrite(msg, 0x0b);
     }
 
-    void SlcanBridge::robomasCallback5(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+    void SlcanBridge::robomasCallback5(const can_plugins2::msg::RobomasTarget::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
-        asyncWrite(msg,0x0c);
+        asyncWrite(msg, 0x0c);
     }
 
-    void SlcanBridge::robomasCallback6(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+    void SlcanBridge::robomasCallback6(const can_plugins2::msg::RobomasTarget::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
-        asyncWrite(msg,0x0d);
+        asyncWrite(msg, 0x0d);
     }
 
-    void SlcanBridge::robomasCallback7(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+    void SlcanBridge::robomasCallback7(const can_plugins2::msg::RobomasTarget::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
-        asyncWrite(msg,0x0e);
+        asyncWrite(msg, 0x0e);
     }
 
-    void SlcanBridge::robomasCallback8(const can_plugins2::msg::RobomasTarget::SharedPtr msg){
+    void SlcanBridge::robomasCallback8(const can_plugins2::msg::RobomasTarget::SharedPtr msg)
+    {
         if (!is_active_)
             return;
 
-        asyncWrite(msg,0x0f);
+        asyncWrite(msg, 0x0f);
     }
 
     // port open and setting.
@@ -206,26 +213,29 @@ namespace slcan_bridge
 
     void SlcanBridge::asyncWrite(const can_plugins2::msg::RobomasFrame::SharedPtr robomasFrame)
     {
-        //if (command == slcan_command::Normal)
-        //    RCLCPP_ERROR(get_logger(), "asyncWrite(Command) can not use normal. you need to use asyncWrite(Frame)");
+        // if (command == slcan_command::Normal)
+        //     RCLCPP_ERROR(get_logger(), "asyncWrite(Command) can not use normal. you need to use asyncWrite(Frame)");
 
         // data structure
         /*
         uint8_t command & frame_type: (command: if it is normal can frame, it is 0x00.)<<4 | is_rtr << 2 | is_extended << 1 | is_error
         uint8_t id[] : data
         */
-        if(robomasFrame->motor < 8){
+        if (robomasFrame->motor < 8)
+        {
+            RCLCPP_ERROR(get_logger(), "dsaijd");
+
             std::vector<uint8_t> raw_data(19);
-            //command&motorID[1]|mode[1]|temp[1]|kp[4]|ki[4]|kd[4]|limitie[4]
-            raw_data[0] = (0x30 + robomasFrame->motor) ;
+            // command&motorID[1]|mode[1]|temp[1]|kp[4]|ki[4]|kd[4]|limitie[4]
+            raw_data[0] = (0x30 + robomasFrame->motor);
             raw_data[1] = robomasFrame->mode;
             raw_data[2] = robomasFrame->temp;
-            memcpy(raw_data.data() + 3,&robomasFrame->kp,sizeof(float));
-            memcpy(raw_data.data() + 7,&robomasFrame->ki,sizeof(float));
-            memcpy(raw_data.data() + 11,&robomasFrame->kd,sizeof(float));
-            memcpy(raw_data.data() + 15,&robomasFrame->limitie,sizeof(float));
+            std::memcpy(raw_data.data() + 3, &(robomasFrame->kp), sizeof(float));
+            std::memcpy(raw_data.data() + 7, &(robomasFrame->ki), sizeof(float));
+            std::memcpy(raw_data.data() + 11, &(robomasFrame->kd), sizeof(float));
+            std::memcpy(raw_data.data() + 15, &(robomasFrame->limitie), sizeof(float));
             std::vector<uint8_t> output = cobs::encode(raw_data);
-
+            //RCLCPP_ERROR(get_logger(), "readOnceHandler error %s", test::hex_to_string(output).c_str());
             asyncWrite(output);
         }
         /*if(robomasFrame-> == 0x00){
@@ -248,9 +258,9 @@ namespace slcan_bridge
             asyncWrite(output);
         }else if((0x02 <= robomasFrame->command) && (robomasFrame->command <= 0x06)){
             std::vector<uint8_t> raw_data(33);
-            
-            memcpy(raw_data.data() + 1,robomasFrame->target.data(),robomasFrame->target.size() * sizeof(float));
-            
+
+            std::memcpy(raw_data.data() + 1,robomasFrame->target.data(),robomasFrame->target.size() * sizeof(float));
+
             raw_data[0] = (0x30 + robomasFrame->command) ;
             std::vector<uint8_t> output = cobs::encode(raw_data);
 
@@ -258,11 +268,16 @@ namespace slcan_bridge
         }*/
     }
 
-    void SlcanBridge::asyncWrite(const can_plugins2::msg::RobomasTarget::SharedPtr robomasTarget, uint8_t motor){
-        std::vector<uint8_t> raw_data(9);
-        //command&motorID[1]|target[4]
+    void SlcanBridge::asyncWrite(const can_plugins2::msg::RobomasTarget::SharedPtr robomasTarget, uint8_t motor)
+    {
+        RCLCPP_ERROR(get_logger(), "TARGET");
+        std::vector<uint8_t> raw_data(5);
+        // command&motorID[1]|target[4]
         raw_data[0] = (0x30 + (0x0f & motor));
-        memcpy(raw_data.data() + 1,&robomasTarget->target,sizeof(float));
+        std::memcpy(raw_data.data() + 1, &(robomasTarget->target), sizeof(float));
+        std::vector<uint8_t> output = cobs::encode(raw_data);
+        //RCLCPP_ERROR(get_logger(), "readOnceHandler error %s", test::hex_to_string(output).c_str());
+        asyncWrite(output);
     }
 
     void SlcanBridge::readingProcess(const std::vector<uint8_t> data)
