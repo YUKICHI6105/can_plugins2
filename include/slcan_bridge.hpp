@@ -56,7 +56,7 @@ namespace slcan_bridge
         // thread fot running io_context
         std::thread io_context_thread_;
 
-        std::unique_ptr<std::thread> reading_thread_;
+        //std::unique_ptr<std::thread> reading_thread_;
 
         rclcpp::Publisher<can_plugins2::msg::Frame>::SharedPtr can_rx_pub_;
         rclcpp::Subscription<can_plugins2::msg::Frame>::SharedPtr can_tx_sub_;
