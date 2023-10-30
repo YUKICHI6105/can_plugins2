@@ -120,7 +120,7 @@ namespace buffered_slcan_bridge
         can_rx_pub_ = this->create_publisher<can_plugins2::msg::Frame>("can_rx", 10);
         can_tx_sub_ = this->create_subscription<can_plugins2::msg::Frame>("can_tx", 10, std::bind(&BufferedSlcanBridge::canRxCallback, this, _1));
 
-        std::string port_name = "/dev/usbcan2";
+        std::string port_name = "/dev/robomas";
 
         // initalize asio members
         io_context_ = std::make_shared<boost::asio::io_context>();

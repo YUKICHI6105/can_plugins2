@@ -2,11 +2,7 @@ std_msgs/Header header
 uint8 motor
 uint8 mode
 uint8 temp
-float32 velkp
-float32 velki
-float32 velkd
-float32 vellimitie
-float32 poskp
-float32 poski
-float32 poskd
-float32 poslimitie
+float32 kp
+float32 ki
+float32 kd
+float32 limitie

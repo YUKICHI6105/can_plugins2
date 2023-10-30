@@ -44,7 +44,7 @@ namespace slcan_bridge
         bool is_active_ = false;
         /////////////Slacan Status///////////////////
 
-        std::string port_name_ = "/dev/usbcan2";
+        std::string port_name_ = "/dev/robomas";
 
         std::shared_ptr<boost::asio::io_context> io_context_;
         std::shared_ptr<boost::asio::serial_port> serial_port_;
