@@ -9,7 +9,7 @@
 #include "cobs.hpp"
 #include "test.hpp"
 
-#include "can_plugins2/msg/frame.hpp"
+#include "can_plugins2_plus/msg/frame.hpp"
 using namespace std::chrono_literals;
 using namespace std::placeholders;
 

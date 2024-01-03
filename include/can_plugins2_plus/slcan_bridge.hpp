@@ -12,7 +12,7 @@
 #include <boost/bind/bind.hpp>
 #include "cobs.hpp"
 #include "test.hpp"
-#include "can_plugins2/msg/frame.hpp"
+#include "can_plugins2_plus/msg/frame.hpp"
 using namespace std::chrono_literals;
 using namespace std::placeholders;
 
@@ -29,7 +29,7 @@ namespace slcan_command
 namespace slcan_bridge
 {
 
-    class SlcanBridge : public rclcpp::Node
+    class SlcanBridge_plus : public rclcpp::Node
     {
     private:
         /////////////Slacan Status///////////////////
@@ -55,10 +55,10 @@ namespace slcan_bridge
 
         std::unique_ptr<std::thread> reading_thread_;
 
-        rclcpp::Publisher<can_plugins2::msg::Frame>::SharedPtr can_rx_pub_;
-        rclcpp::Subscription<can_plugins2::msg::Frame>::SharedPtr can_tx_sub_;
+        rclcpp::Publisher<can_plugins2_plus::msg::Frame>::SharedPtr can_rx_pub_;
+        rclcpp::Subscription<can_plugins2_plus::msg::Frame>::SharedPtr can_tx_sub_;
 
-        void canTxCallback(const can_plugins2::msg::Frame::SharedPtr msg);
+        void canTxCallback(const can_plugins2_plus::msg::Frame::SharedPtr msg);
 
         const int initialize_timeout_ = 1000; // ms
         // port open and setting.
@@ -71,7 +71,7 @@ namespace slcan_bridge
         // convert message from usbcan, and process it.
         void readingProcess(const std::vector<uint8_t> data);
 
-        void asyncWrite(const can_plugins2::msg::Frame::SharedPtr msg);
+        void asyncWrite(const can_plugins2_plus::msg::Frame::SharedPtr msg);
         void asyncWrite(const slcan_command::Command command, const std::vector<uint8_t> data);
 
         // Directly use is deprecated.
@@ -90,7 +90,7 @@ namespace slcan_bridge
         void writeHandler(const boost::system::error_code &error, std::size_t bytes_transferred);
 
     public:
-        SlcanBridge(const rclcpp::NodeOptions &options);
+        SlcanBridge_plus(const rclcpp::NodeOptions &options);
 
         // shutfdown process
         void onShutdown()

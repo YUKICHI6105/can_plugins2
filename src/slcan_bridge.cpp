@@ -1,14 +1,14 @@
-#include <can_plugins2/slcan_bridge.hpp>
+#include <can_plugins2_plus/slcan_bridge.hpp>
 
 namespace slcan_bridge
 {
 
-    SlcanBridge::SlcanBridge(const rclcpp::NodeOptions &options) : Node("slcan_bridge", options)
+    SlcanBridge_plus::SlcanBridge_plus(const rclcpp::NodeOptions &options) : Node("slcan_bridge_plus", options)
     {
         rclcpp::on_shutdown([this]()
                             { this->onShutdown(); });
-        can_rx_pub_ = this->create_publisher<can_plugins2::msg::Frame>("can_rx", 10);
-        can_tx_sub_ = this->create_subscription<can_plugins2::msg::Frame>("can_tx", 10, std::bind(&SlcanBridge::canTxCallback, this, _1));
+        can_rx_pub_ = this->create_publisher<can_plugins2_plus::msg::Frame>("can_rx2", 10);
+        can_tx_sub_ = this->create_subscription<can_plugins2_plus::msg::Frame>("can_tx2", 10, std::bind(&SlcanBridge_plus::canTxCallback, this, _1));
 
         // initalize asio members
         io_context_ = std::make_shared<boost::asio::io_context>();
@@ -20,14 +20,14 @@ namespace slcan_bridge
                                              io_context_->run();
                                              RCLCPP_INFO(this->get_logger(), "io_context_->run() is finished."); });
 
-        RCLCPP_INFO(get_logger(), "SlcanBridge is initialized.");
+        RCLCPP_INFO(get_logger(), "SlcanBridge_plus is initialized.");
 
         initializeSerialPort(port_name_);
         asyncRead();
         handshake();
     }
 
-    void SlcanBridge::canTxCallback(const can_plugins2::msg::Frame::SharedPtr msg)
+    void SlcanBridge_plus::canTxCallback(const can_plugins2_plus::msg::Frame::SharedPtr msg)
     {
         if (!is_active_)
             return;
@@ -36,7 +36,7 @@ namespace slcan_bridge
     }
 
     // port open and setting.
-    void SlcanBridge::initializeSerialPort(const std::string port_name)
+    void SlcanBridge_plus::initializeSerialPort(const std::string port_name)
     {
         rclcpp::WallRate rate(10ms);
         while (!is_shutdown_)
@@ -77,15 +77,15 @@ namespace slcan_bridge
         return;
     }
 
-    void SlcanBridge::asyncWrite(const std::vector<uint8_t> data)
+    void SlcanBridge_plus::asyncWrite(const std::vector<uint8_t> data)
     {
         io_context_->post([this, data]()
                           { boost::asio::async_write(*serial_port_, boost::asio::buffer(data),
-                                                     boost::bind(&SlcanBridge::writeHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)); });
+                                                     boost::bind(&SlcanBridge_plus::writeHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)); });
         return;
     }
 
-    void SlcanBridge::asyncWrite(const can_plugins2::msg::Frame::SharedPtr msg)
+    void SlcanBridge_plus::asyncWrite(const can_plugins2_plus::msg::Frame::SharedPtr msg)
     {
         // data structure
         /*
@@ -111,7 +111,7 @@ namespace slcan_bridge
         asyncWrite(output);
     }
 
-    void SlcanBridge::asyncWrite(const slcan_command::Command command, const std::vector<uint8_t> data)
+    void SlcanBridge_plus::asyncWrite(const slcan_command::Command command, const std::vector<uint8_t> data)
     {
         if (command == slcan_command::Normal)
             RCLCPP_ERROR(get_logger(), "asyncWrite(Command) can not use normal. you need to use asyncWrite(Frame)");
@@ -132,7 +132,7 @@ namespace slcan_bridge
         asyncWrite(output);
     }
 
-    void SlcanBridge::readingProcess(const std::vector<uint8_t> data)
+    void SlcanBridge_plus::readingProcess(const std::vector<uint8_t> data)
     {
         std::vector<uint8_t> cobs_output_buffer_ = cobs::decode(data);
 
@@ -173,7 +173,7 @@ namespace slcan_bridge
         uint8_t dlc : data length
         uint8_t data[8] : data
         */
-        auto msg = std::make_unique<can_plugins2::msg::Frame>();
+        auto msg = std::make_unique<can_plugins2_plus::msg::Frame>();
         msg->is_error = cobs_output_buffer_[0] & 0x1;
         msg->is_extended = cobs_output_buffer_[0] >> 1 & 0x1;
         msg->is_rtr = cobs_output_buffer_[0] >> 2 & 0x1;
@@ -187,7 +187,7 @@ namespace slcan_bridge
         return;
     }
 
-    bool SlcanBridge::handshake()
+    bool SlcanBridge_plus::handshake()
     {
         rclcpp::WallRate rate(10ms);
         while (!is_active_ && !is_shutdown_)
@@ -200,7 +200,7 @@ namespace slcan_bridge
         return true;
     }
 
-    void SlcanBridge::readOnceHandler(const boost::system::error_code &error, std::size_t bytes_transferred)
+    void SlcanBridge_plus::readOnceHandler(const boost::system::error_code &error, std::size_t bytes_transferred)
     {
         if (error)
         {
@@ -217,14 +217,14 @@ namespace slcan_bridge
             data[i] = data_ptr[i];
         }
 
-        SlcanBridge::readingProcess(data);
+        SlcanBridge_plus::readingProcess(data);
 
         // RCLCPP_INFO(get_logger(),"readOnceHandler %s",test::hex_to_string(data,bytes_transferred).c_str());
         read_streambuf_.consume(bytes_transferred);
         return;
     }
 
-    void SlcanBridge::readHandler(const boost::system::error_code &error, std::size_t bytes_transferred)
+    void SlcanBridge_plus::readHandler(const boost::system::error_code &error, std::size_t bytes_transferred)
     {
         // end of file; it means usb disconnect.
         if (error == boost::asio::error::eof)
@@ -258,17 +258,17 @@ namespace slcan_bridge
     }
 
     // write data to the serial port. it calls asyncReadOnce() after reading.
-    void SlcanBridge::asyncReadOnce()
+    void SlcanBridge_plus::asyncReadOnce()
     {
         // read and write functions can worl in the same time.
         // so, it is not necessary to use io_context_->post()      (this is a strand.)
         boost::asio::async_read_until(*serial_port_, read_streambuf_, '\0',
-                                      boost::bind(&SlcanBridge::readOnceHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+                                      boost::bind(&SlcanBridge_plus::readOnceHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 
         return;
     }
 
-    void SlcanBridge::writeHandler(const boost::system::error_code &error, std::size_t bytes_transferred)
+    void SlcanBridge_plus::writeHandler(const boost::system::error_code &error, std::size_t bytes_transferred)
     {
         if (error)
         {
@@ -301,12 +301,12 @@ namespace slcan_bridge
     }
 
     // write data to the serial port. it calls asyncRead() after reading.
-    void SlcanBridge::asyncRead()
+    void SlcanBridge_plus::asyncRead()
     {
         // read and write functions can worl in the same time.
         // so, it is not necessary to use io_context_->post()      (this is a strand.)
         boost::asio::async_read_until(*serial_port_, read_streambuf_, '\0',
-                                      boost::bind(&SlcanBridge::readHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+                                      boost::bind(&SlcanBridge_plus::readHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
         return;
     }
 
@@ -317,4 +317,4 @@ namespace slcan_bridge
 // Register the component with class_loader.
 // This acts as a sort of entry point, allowing the component to be discoverable when its library
 // is being loaded into a running process.
-RCLCPP_COMPONENTS_REGISTER_NODE(slcan_bridge::SlcanBridge)
+RCLCPP_COMPONENTS_REGISTER_NODE(slcan_bridge::SlcanBridge_plus)

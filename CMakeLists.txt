@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(can_plugins2)
+project(can_plugins2_plus)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -33,25 +33,25 @@ if($ENV{ROS_DISTRO} STREQUAL "humble")
 endif()
 
 
-add_library(slcan_bridge SHARED
+add_library(slcan_bridge_plus SHARED
   src/slcan_bridge.cpp)
 
 # check if ROS_DISTRO is foxy or humbles
 if($ENV{ROS_DISTRO} STREQUAL "humble")
-  target_link_libraries(slcan_bridge "${cpp_typesupport_target}")
+  target_link_libraries(slcan_bridge_plus "${cpp_typesupport_target}")
 elseif($ENV{ROS_DISTRO} STREQUAL "foxy")
-  rosidl_target_interfaces(slcan_bridge
+  rosidl_target_interfaces(slcan_bridge_plus
     ${PROJECT_NAME} "rosidl_typesupport_cpp")
 endif()
 
 
-ament_target_dependencies(slcan_bridge
+ament_target_dependencies(slcan_bridge_plus
   rclcpp
   rclcpp_components
   std_msgs
 )
 
-rclcpp_components_register_nodes(slcan_bridge "slcan_bridge::SlcanBridge")
+rclcpp_components_register_nodes(slcan_bridge_plus "slcan_bridge::SlcanBridge_plus")
 
 install(
   DIRECTORY include/
@@ -60,7 +60,7 @@ install(
 ament_export_include_directories(include)
 
 install(TARGETS
-  slcan_bridge
+  slcan_bridge_plus
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin

@@ -18,6 +18,6 @@ you write launch file like omuni.launch.
 
 copy udev rule
 ```
-sudo cp ~/catkin_ws/src/can_plugins2/udev/60-usbcan.rules /etc/udev/rules.d/60-usbcan.rules
+sudo cp ~/ros2_ws/src/can_plugins2_plus/udev/60-usbcan.rules /etc/udev/rules.d/60-usbcan_plus.rules
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```

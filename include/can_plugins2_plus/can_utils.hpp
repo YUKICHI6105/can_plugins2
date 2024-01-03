@@ -2,7 +2,7 @@
 
 #include <array>
 #include <bit>
-#include <can_plugins2/msg/frame.hpp>
+#include <can_plugins2_plus/msg/frame.hpp>
 
 namespace can_utils
 {
@@ -22,9 +22,9 @@ namespace can_utils
   }
 
   template <typename T>
-  inline std::unique_ptr<can_plugins2::msg::Frame> generate_frame(const uint16_t id, const T data)
+  inline std::unique_ptr<can_plugins2_plus::msg::Frame> generate_frame(const uint16_t id, const T data)
   {
-    can_plugins2::msg::Frame frame;
+    can_plugins2_plus::msg::Frame frame;
     frame.id = id;
     frame.is_rtr = false;
     frame.is_extended = false;
@@ -35,13 +35,13 @@ namespace can_utils
 
     can_pack<T>(frame.data, data);
 
-    return make_unique<can_plugins2::msg::Frame>(frame);
+    return make_unique<can_plugins2_plus::msg::Frame>(frame);
   }
 
   template <typename T>
-  inline std::unique_ptr<can_plugins2::msg::Frame> generate_frame(const uint16_t id, const T data, const std::endian endian = std::endian::native)
+  inline std::unique_ptr<can_plugins2_plus::msg::Frame> generate_frame(const uint16_t id, const T data, const std::endian endian = std::endian::native)
   {
-    can_plugins2::msg::Frame frame;
+    can_plugins2_plus::msg::Frame frame;
     frame.id = id;
     frame.is_rtr = false;
     frame.is_extended = false;
@@ -67,10 +67,10 @@ namespace can_utils
       }
       break;
     default:
-      throw std::runtime_error("Unknown endian");
+      throw std::runtime_error("Unknown endian");//意味は知らない
     }
 
-    return make_unique<can_plugins2::msg::Frame>(frame);
+    return make_unique<can_plugins2_plus::msg::Frame>(frame);
   }
 
 } // namespace can_utils
