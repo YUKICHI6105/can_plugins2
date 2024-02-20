@@ -226,14 +226,32 @@ namespace slcan_bridge
             RCLCPP_ERROR(get_logger(), "dsaijd");
 
             std::vector<uint8_t> raw_data(19);
-            // command&motorID[1]|mode[1]|temp[1]|kp[4]|ki[4]|kd[4]|limitie[4]
+            // command&C610orC620id&motorID[1]|mode[1]|temp[1]|kp[4]|ki[4]|kd[4]|limitie[4]
             raw_data[0] = (0x30 + (0x0f & robomasFrame->motor));
             raw_data[1] = robomasFrame->mode;
             raw_data[2] = robomasFrame->temp;
-            std::memcpy(raw_data.data() + 3, &(robomasFrame->kp), sizeof(float));
-            std::memcpy(raw_data.data() + 7, &(robomasFrame->ki), sizeof(float));
-            std::memcpy(raw_data.data() + 11, &(robomasFrame->kd), sizeof(float));
-            std::memcpy(raw_data.data() + 15, &(robomasFrame->limitie), sizeof(float));
+            if(robomasFrame->mode == 0x01){
+                std::memcpy(raw_data.data() + 3, &(robomasFrame->poskp), sizeof(float));
+                std::memcpy(raw_data.data() + 7, &(robomasFrame->poski), sizeof(float));
+                std::memcpy(raw_data.data() + 11, &(robomasFrame->poskd), sizeof(float));
+                std::memcpy(raw_data.data() + 15, &(robomasFrame->poslimitie), sizeof(float));
+            }else if(robomasFrame->mode == 0x02){
+                std::memcpy(raw_data.data() + 3, &(robomasFrame->velkp), sizeof(float));
+                std::memcpy(raw_data.data() + 7, &(robomasFrame->velki), sizeof(float));
+                std::memcpy(raw_data.data() + 11, &(robomasFrame->velkd), sizeof(float));
+                std::memcpy(raw_data.data() + 15, &(robomasFrame->vellimitie), sizeof(float));
+            }else if(robomasFrame->mode == 0x03){
+                std::memcpy(raw_data.data() + 3, &(robomasFrame->poskp), sizeof(float));
+                std::memcpy(raw_data.data() + 7, &(robomasFrame->poski), sizeof(float));
+                std::memcpy(raw_data.data() + 11, &(robomasFrame->poskd), sizeof(float));
+                std::memcpy(raw_data.data() + 15, &(robomasFrame->poslimitie), sizeof(float));
+                std::memcpy(raw_data.data() + 19, &(robomasFrame->velkp), sizeof(float));
+                std::memcpy(raw_data.data() + 23, &(robomasFrame->velki), sizeof(float));
+                std::memcpy(raw_data.data() + 27, &(robomasFrame->velkd), sizeof(float));
+                std::memcpy(raw_data.data() + 31, &(robomasFrame->vellimitie), sizeof(float));
+                std::memcpy(raw_data.data() + 35, &(robomasFrame->tyoku_vel_target), sizeof(float));
+                std::memcpy(raw_data.data() + 39, &(robomasFrame->tyoku_pos_target), sizeof(float));
+            }
             std::vector<uint8_t> output = cobs::encode(raw_data);
             //RCLCPP_ERROR(get_logger(), "readOnceHandler error %s", test::hex_to_string(output).c_str());
             asyncWrite(output);
