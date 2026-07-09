@@ -2,7 +2,7 @@ can_plugins2
 ====
 ## Description
 It is for ysk's USBCAN board, is incompatible with the old version.
-It works on ros2 Humble Hawksbill and Foxy Fitzroy. (Using Foxy is not recommended.)
+It is built and tested on ROS 2 Lyrical.
 can_plugins2 is for new version of usbcan_fw. It is not compatible with old version.
 So, you should change new udev rule. See Install section.
 

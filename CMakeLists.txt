@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.20)
 project(can_plugins2)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -16,6 +16,9 @@ find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(std_msgs REQUIRED)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
 find_package(Boost REQUIRED COMPONENTS thread)
 include_directories(include ${Boost_INCLUDE_DIRS})
 
@@ -24,31 +27,22 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES std_msgs
 )
 
-# check if ROS_DISTRO is foxy or humble
-if($ENV{ROS_DISTRO} STREQUAL "humble")
-  ament_export_dependencies(rosidl_default_runtime)
-  rosidl_get_typesupport_target(cpp_typesupport_target
-    ${PROJECT_NAME} "rosidl_typesupport_cpp"
-  )
-endif()
+ament_export_dependencies(rosidl_default_runtime)
+rosidl_get_typesupport_target(cpp_typesupport_target
+  ${PROJECT_NAME} "rosidl_typesupport_cpp"
+)
 
 
 add_library(slcan_bridge SHARED
   src/slcan_bridge.cpp)
 
-# check if ROS_DISTRO is foxy or humbles
-if($ENV{ROS_DISTRO} STREQUAL "humble")
-  target_link_libraries(slcan_bridge "${cpp_typesupport_target}")
-elseif($ENV{ROS_DISTRO} STREQUAL "foxy")
-  rosidl_target_interfaces(slcan_bridge
-    ${PROJECT_NAME} "rosidl_typesupport_cpp")
-endif()
+target_link_libraries(slcan_bridge "${cpp_typesupport_target}")
 
 
-ament_target_dependencies(slcan_bridge
-  rclcpp
-  rclcpp_components
-  std_msgs
+target_link_libraries(slcan_bridge
+  rclcpp::rclcpp
+  rclcpp_components::component
+  std_msgs::std_msgs
 )
 
 rclcpp_components_register_nodes(slcan_bridge "slcan_bridge::SlcanBridge")

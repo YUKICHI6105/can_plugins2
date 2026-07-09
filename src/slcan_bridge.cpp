@@ -79,7 +79,7 @@ namespace slcan_bridge
 
     void SlcanBridge::asyncWrite(const std::vector<uint8_t> data)
     {
-        io_context_->post([this, data]()
+        boost::asio::post(*io_context_, [this, data]()
                           { boost::asio::async_write(*serial_port_, boost::asio::buffer(data),
                                                      boost::bind(&SlcanBridge::writeHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)); });
         return;
@@ -211,7 +211,7 @@ namespace slcan_bridge
         std::vector<uint8_t> data(bytes_transferred);
 
         // it can use iostream but
-        const uint8_t *data_ptr = (const uint8_t *)boost::asio::buffer_cast<const char *>(read_streambuf_.data());
+        const uint8_t *data_ptr = static_cast<const uint8_t *>(read_streambuf_.data().data());
         for (std::size_t i = 0; i < bytes_transferred; i++)
         {
             data[i] = data_ptr[i];
@@ -233,7 +233,7 @@ namespace slcan_bridge
             is_connected_ = false;
             // reconnect
             serial_port_->close();
-            io_context_->reset();
+            io_context_->restart();
             serial_port_.reset();
             work_guard_.reset();
             io_context_thread_.detach();
